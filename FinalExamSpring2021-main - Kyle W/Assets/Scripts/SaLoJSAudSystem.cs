@@ -1,0 +1,85 @@
+﻿using UnityEngine;
+using UnityEngine.SceneManagement;
+using System.IO;
+using System.Runtime.Serialization.Formatters.Binary;
+
+public class SaLoJSAudSystem : MonoBehaviour
+{
+    public void RestartLevel()
+    {
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+    }
+
+    public AudioSource music;
+
+    private Save CreateSaveGameObject()
+    {
+        Save save = new Save();
+
+        save.sName = Data.Instance.playerName;
+
+        save.sLives = Data.Instance.playerLives;
+
+        save.sScore = Data.Instance.score;
+
+        save.sPlayTime = Data.Instance.playTime;
+
+        return save;
+    }
+
+    public void SaveGame()
+    {
+        Save save = CreateSaveGameObject();
+
+        BinaryFormatter bf = new BinaryFormatter();
+        FileStream file = File.Create(Application.persistentDataPath + "/gamesave.save");
+        bf.Serialize(file, save);
+        file.Close();
+
+        Debug.Log("Save Games");
+    }
+
+    public void LoadGame()
+    {
+        if (File.Exists(Application.persistentDataPath + "/gamesave.save"))
+        {
+
+            BinaryFormatter bf = new BinaryFormatter();
+            FileStream file = File.Open(Application.persistentDataPath + "/gamesave.save", FileMode.Open);
+            Save save = (Save)bf.Deserialize(file);
+            file.Close();
+
+            Data.Instance.playerName = save.sName;
+            Data.Instance.playerLives = save.sLives;
+            Data.Instance.score = save.sScore;
+            Data.Instance.playTime = save.sPlayTime;
+
+            Debug.Log("Game Loaded");
+        }
+        else
+        {
+            Debug.Log("No game saved!");
+        }
+    }
+
+    public void SaveAsJSON()
+    {
+        Save save = CreateSaveGameObject();
+        string json = JsonUtility.ToJson(save);
+
+        Debug.Log("Saving as JSON: " + json);
+    }
+
+    public void toggleMusic()
+    {
+        if (music.mute)
+        {
+            music.mute = false;
+        }
+        else
+        {
+            music.mute = true;
+        }
+
+    }
+}
